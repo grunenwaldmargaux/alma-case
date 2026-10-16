@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Nurturing_Stage_Date__c</fullName>
+    <label>Nurturing Stage Date</label>
+    <description>Date the account entered the Nurturing lifecycle stage. Set by the Close Lost Opportunity flow.</description>
+    <inlineHelpText>Date this account was last moved to Nurturing.</inlineHelpText>
+    <required>false</required>
+    <type>Date</type>
+</CustomField>
