@@ -18,4 +18,9 @@
         <field>Account.Nurturing_Source_Opportunity__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Opportunity.Loss_Reason__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
 </PermissionSet>
