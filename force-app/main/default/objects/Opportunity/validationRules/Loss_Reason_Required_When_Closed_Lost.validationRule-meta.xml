@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Loss_Reason_Required_When_Closed_Lost</fullName>
+    <active>true</active>
+    <description>Ensures every lost opportunity has a reason, for loss analysis.</description>
+    <errorConditionFormula>AND(ISPICKVAL(StageName, "Closed Lost"), ISBLANK(TEXT(Loss_Reason__c)))</errorConditionFormula>
+    <errorDisplayField>Loss_Reason__c</errorDisplayField>
+    <errorMessage>Please select a Loss Reason before closing this opportunity as lost.</errorMessage>
+</ValidationRule>
