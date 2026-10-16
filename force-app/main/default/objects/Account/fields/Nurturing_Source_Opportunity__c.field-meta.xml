@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Nurturing_Source_Opportunity__c</fullName>
+    <label>Nurturing Source Opportunity</label>
+    <description>Lost opportunity that triggered the move to Nurturing.</description>
+    <inlineHelpText>The lost deal that moved this account to Nurturing.</inlineHelpText>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>Opportunity</referenceTo>
+    <relationshipLabel>Nurtured Accounts</relationshipLabel>
+    <relationshipName>Nurtured_Accounts</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>
