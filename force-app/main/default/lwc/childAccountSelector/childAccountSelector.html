@@ -1,0 +1,66 @@
+<template>
+    <lightning-card title="Child Accounts" icon-name="standard:account">
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium slds-is-relative">
+
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading child accounts" size="medium"></lightning-spinner>
+            </template>
+
+            <template if:false={hasMasterAccount}>
+                <p>Select a parent account to see its child accounts.</p>
+            </template>
+
+            <template if:true={errorMessage}>
+                <p class="slds-text-color_error" role="alert">{errorMessage}</p>
+            </template>
+
+            <template if:true={showContent}>
+                <lightning-input
+                    type="search"
+                    variant="label-hidden"
+                    label="Search accounts"
+                    placeholder="Search by account name"
+                    value={searchTerm}
+                    onchange={handleSearchChange}>
+                </lightning-input>
+
+                <h3 class="slds-text-heading_small slds-m-top_medium">{eligibleHeading}</h3>
+
+                <template if:true={hasNoEligibleAccounts}>
+                    <p class="slds-m-top_small">None of the child accounts can be moved to Nurturing.</p>
+                </template>
+
+                <template if:true={hasEligibleButNoMatch}>
+                    <p class="slds-m-top_small">No eligible account matches your search.</p>
+                </template>
+
+                <template if:true={hasVisibleEligibleAccounts}>
+                    <div class="table-scroll">
+                        <lightning-datatable
+                            key-field="id"
+                            columns={columns}
+                            data={visibleEligibleAccounts}
+                            selected-rows={selectedRows}
+                            onrowselection={handleRowSelection}>
+                        </lightning-datatable>
+                    </div>
+                </template>
+
+                <p class="slds-m-top_small">{selectedLabel}</p>
+
+                <template if:true={hasVisibleIneligibleAccounts}>
+                    <h3 class="slds-text-heading_small slds-m-top_large">{ineligibleHeading}</h3>
+                    <div class="table-scroll not-eligible-table">
+                        <lightning-datatable
+                            key-field="id"
+                            columns={columns}
+                            data={visibleIneligibleAccounts}
+                            hide-checkbox-column>
+                        </lightning-datatable>
+                    </div>
+                </template>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>
