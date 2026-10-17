@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Child Account Selector</masterLabel>
+    <description>Lets a sales rep select child accounts to move to Nurturing when closing an opportunity as lost.</description>
+    <targets>
+        <target>lightning__FlowScreen</target>
+        <target>lightning__RecordPage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="masterAccountId" type="String" label="Master Account Id" role="inputOnly" description="Id of the parent account whose direct children are listed."/>
+            <property name="selectedAccountIds" type="String[]" label="Selected Account Ids" role="outputOnly" description="Ids of the child accounts selected by the user."/>
+            <property name="selectedCount" type="Integer" label="Selected Count" role="outputOnly" description="Number of child accounts selected by the user."/>
+        </targetConfig>
+        <targetConfig targets="lightning__RecordPage">
+            <objects>
+                <object>Account</object>
+            </objects>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
