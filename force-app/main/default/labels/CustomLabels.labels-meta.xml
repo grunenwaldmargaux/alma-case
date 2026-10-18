@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>Close_Lost_Flow_Error_Recipient</fullName>
+        <categories>Close Lost Flow</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Email address notified when the Close Lost flow fails.</shortDescription>
+        <value>grunenwald.margaux@gmail.com</value>
+    </labels>
+</CustomLabels>

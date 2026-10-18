@@ -6,6 +6,10 @@
         <apexClass>ChildAccountSelectorController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <flowAccesses>
+        <enabled>true</enabled>
+        <flow>OPP_Close_lost_opp_put_child_accounts_in_Nurturing_stage</flow>
+    </flowAccesses>
     <hasActivationRequired>false</hasActivationRequired>
     <fieldPermissions>
         <editable>true</editable>
