@@ -1,58 +1,108 @@
-# Salesforce DX Project
+# Close Lost Opportunity – Alma Revenue Systems Lead Case Study
 
-Salesforce DX is a development approach that brings source-driven development, team collaboration, and continuous integration to the Salesforce Platform. Instead of working directly in an org through a web browser, you work with metadata as source files in a local DX project, track changes in version control, and deploy through automated processes.
+A Sales rep closes a lost deal on a **Master Account** and, in the same step, moves some of its **Child Accounts** to **Nurturing**.
 
-This project template gets you started with the tools and structure you need to build Salesforce applications using source control, scratch orgs, and the Salesforce CLI.
+---
 
-## Prerequisites
+## How it works
 
-Before you start, make sure you have:
+```
+Opportunity page
+ └─ "Close Lost Opportunity" button  (Quick Action, shown only while IsClosed = false)
+     └─ Screen Flow
+         1. Get the child accounts of the opportunity's account
+         2. One screen:
+            - Loss Reason (required)
+            - childAccountSelector LWC        (if the account has children)
+            - or "<Account> has no child accounts. Only the opportunity will be closed."
+            - button "Close as Lost"
+         3. Update the selected accounts → Lifecycle Status = Nurturing, Nurturing Stage Date = today
+         4. Update the opportunity       → Stage = Closed Lost, Loss Reason
+         5. Confirmation screen
+         If step 3 or 4 fails → roll back everything, email the admin, show an error screen
+```
 
-- **Salesforce CLI** - Download from [developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli). See [Install Salesforce CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) for details.
-- **VS Code with Salesforce Extension Pack** - See [Installation Instructions](https://developer.salesforce.com/docs/platform/sfvscode-extensions/guide/install.html) for details. Includes the Agentforce Vibes extension.
-- **A development org** - Sign up for a free Developer Edition org [here](https://developer.salesforce.com/signup).
-- **Dev Hub enabled** (optional, required to create scratch orgs) - You can enable Dev Hub in your development org under Setup > Dev Hub.  See [Provide Developers Access to Salesforce DX Tools](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_setup_dx_tools.htm).
+| Component | Type | Role |
+|---|---|---|
+| `Lifecycle_Status__c` | Account field (picklist) | Prospect, Customer, Nurturing, Churned |
+| `Nurturing_Stage_Date__c` | Account field (date) | When the account entered Nurturing |
+| `Loss_Reason__c` | Opportunity field (picklist) | Why the deal was lost |
+| `Loss_Reason_Required_When_Closed_Lost` | Validation rule | No Closed Lost without a reason, whatever the entry point |
+| `childAccountSelector` | LWC | Child account selection |
+| `ChildAccountSelectorController` | Apex | Returns direct children with eligibility and reason |
+| `OPP_Close_lost_opp_put_child_accounts_in_Nurturing_stage` | Screen Flow | Orchestration and updates |
+| `Opportunity.Close_Lost_Opportunity` | Quick Action | The button |
+| `Opportunity_Record_Page1` | Lightning page | Shows the button through Dynamic Actions |
+| `Close_Lost_Flow_Error_Recipient` | Custom label | Admin email notified on errors |
+| `Close_Lost_Network` | Permission set | Field, Apex and flow access for Revenue users |
 
-## Project Structure
+---
 
-Your DX project follows this structure:
+## Decision: accounts already in Nurturing
 
-- **`force-app/main/default/`** - Your metadata source files live in this default package directory. You can configure additional package directories in the `sfdx-project.json` file.
-- **`config/`** - Scratch org definitions and project settings
-- **`scripts/`** - Automation scripts for common tasks
-- **`sfdx-project.json`** - Project manifest that defines package directories, namespace, API version, and other project-level settings
+**Already-Nurturing children are shown, greyed out, and cannot be selected.**
 
-See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm).
+- **Shown**, so reps see the whole network and never think an account is missing.
+- **Not selectable**, because moving them again adds nothing.
+- **Not refreshed**: their `Nurturing_Stage_Date__c` keep its original values, so we keep track of when the account first entered Nurturing.
 
-## Get Started
+The same rule applies to **active customers**: a customer must never be moved to Nurturing by mistake (e.g. group expansion, where some children of the network are already live).
 
-Ready to start developing? The [Get Started with Salesforce DX](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_get_started_dx.htm) guide walks you through your first project, from creating a scratch org to creating a simple Apex class or LWC to deploying your code to a sandbox.
+The LWC therefore shows two tables and both use the custom LWC:
 
-## Common Salesforce CLI Commands
+- **Eligible accounts**: Prospect and Churned children, with checkboxes and select-all.
+- **Not eligible**: greyed out, with the reason: *Already in Nurturing*, *Active customer* or *No edit access*.
 
-Here are common CLI commands that you'll use the most:
+> Two tables instead of one, because `lightning-datatable` cannot disable a single row's checkbox.
 
-- `sf org login web`: Authorize an org
-- `sf org open`: Open your org in a browser
-- `sf org create scratch`: Create a scratch org
-- `sf project deploy start`: Deploy metadata to your org
-- `sf project retrieve start`: Retrieve metadata from your org
-- `sf template generate <artifact>`: Scaffold new components, such as Apex classes and triggers, LWC components, Lightning apps, and more
-- `sf apex <command>`: Run Apex tests, run anonymous Apex blocks, and view logs
-- `sf data <command>`: Work with test data
-- `sf alias <command>`: Manage org aliases
-- `sf config <command>`: Configure CLI settings
+---
 
-## Use Agentforce Vibes to Build Lightning Apps
+## Edge cases
 
-Transform your ideas into custom Lightning apps that extend CRM workflows directly in Lightning Experience. Through natural conversations with Agentforce Vibes, implement custom objects and fields, complex business logic, and dynamic UI components. See [Build a Lightning App Using Agentforce Vibes](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/lexapp-overview.html).
+### Handled
 
-## Additional Resources
+| Edge case | Behaviour |
+|---|---|
+| Account has no children | Message on screen, LWC hidden; the rep can still close lost the opportunity |
+| No eligible child | All children listed under "Not eligible"; the rep can still close lost the opportunity |
+| Rep selects no account | Allowed: only the opportunity is closed |
+| Child already in Nurturing / active customer | Greyed out, not selectable |
+| Large network | Search by name, "(X of N)" counters, selection kept while filtering. Edit access checked in chunks of 200 (platform limit) |
+| Grandchildren | Not shown: direct children only, as per the brief |
+| Loss Reason missing | Required on screen + validation rule on the object |
+| Opportunity already closed | Button hidden (`IsClosed = false`), the button being the only entry point to the flow |
+| An update fails (validation rule, record locking…) | Shared fault path: **rollback of all changes**, email to the admin with the error, readable error screen for the rep. All or nothing: never a closed opportunity with half-updated accounts |
+| Rep closes the window before clicking "Close as Lost" | Nothing is saved |
 
-- [Agentforce Vibes Developer Guide](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/einstein-overview.html)
-- [Salesforce CLI Installation Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/)
-- [Salesforce CLI Plugin Development Guide](https://developer.salesforce.com/docs/platform/salesforce-cli-plugin/guide/conceptual-overview.html)
-- [Salesforce VS Code Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
+### Identified, not handled
 
+| Edge case | Why / next step |
+|---|---|
+| Opportunity without an account | Not expected: opportunities always live on the master account. Next step: a Decision at the start of the flow with an explicit message |
+| Opportunity on a child account | Same assumption. The flow would list the child's own children. Next step: warn the rep, or walk up to the master |
+
+---
+
+## Assumptions & open questions
+
+- **Which children were in scope of the deal?** No data links an opportunity to specific children, so **the rep decides**. A future improvement would be a junction object (Opportunity ↔ Account) to track the deal's real scope to be able to handle partial launches within a master account.
+- `Lifecycle_Status__c` is a new field, distinct from the standard `Type`: `Type` describes the nature of the relationship, not the commercial lifecycle. Mixing both would pollute reporting.
+- Churned accounts are eligible for Nurturing: they can be re-engaged.
+
+---
+
+## Other design choices
+
+- **Loss Reason uses a Picklist Choice Set** bound to the field: one source of truth, new values appear in the flow automatically.
+- **Field-level security via a permission set**, no profile changes: least privilege, safer deployments.
+- **Apex runs `with sharing` and `WITH USER_MODE`**: reps only see what they are allowed to see.
+- **Error recipient in a custom label**: changeable per org without editing the flow.
+- **Handled faults + admin email** rather than unhandled faults: reps get a clear message instead of a generic error, and the admin still gets notified, with more context than the standard flow error email. I would also use a logger package (my preferred is Nebula Logger) to log the flow error + send a slack notification in a dedicated channel for immediate response if needed. 
+
+---
+
+## Testing
+
+- **Apex**: 9 tests, 100% coverage of `ChildAccountSelectorController` (eligibility rules, rule order, grandchildren excluded, empty master, 250-child network, user without edit access).
+- **Test data**: `scripts/apex/seed-test-data.apex` is idempotent and creates one scenario per network: Burger Group (mixed statuses + a grandchild), Solo Café (no children), XXL Chain (60 children), an opportunity on a child account, and a Closed Won opportunity.
+- **Manual test plan**: run the button on each seeded opportunity, re-running the seed script between runs to reset the data.
