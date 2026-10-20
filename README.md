@@ -44,11 +44,11 @@ Opportunity page
 
 - **Shown**, so reps see the whole network and never think an account is missing.
 - **Not selectable**, because moving them again adds nothing.
-- **Not refreshed**: their `Nurturing_Stage_Date__c` keep its original values, so we keep track of when the account first entered Nurturing.
+- **Not refreshed**: their `Nurturing_Stage_Date__c` keeps its original value, so we keep track of when the account first entered Nurturing.
 
 The same rule applies to **active customers**: a customer must never be moved to Nurturing by mistake (e.g. group expansion, where some children of the network are already live).
 
-The LWC therefore shows two tables and both use the custom LWC:
+The LWC therefore shows two tables:
 
 - **Eligible accounts**: Prospect and Churned children, with checkboxes and select-all.
 - **Not eligible**: greyed out, with the reason: *Already in Nurturing*, *Active customer* or *No edit access*.
